@@ -82,9 +82,7 @@ if __name__ == '__main__':
 
         # Save model
         old_ckpt = new_model.state_dict()
-        torch.save(old_ckpt, os.path.join(configs.save_dir, 'models', f'env_{env_idx + 1}.pth'))
-
-        
+        torch.save(old_ckpt, os.path.join(configs.save_dir, 'models', f'env_{env_idx}.pth'))
     
         # Update Memory 
         memory.update_memory(env, env_idx)
