@@ -83,7 +83,7 @@ def eval_singlesession(model, database, world_thresh, false_pos_thresh, time_thr
             if top1_embed_dist < threshold: # Positive Prediction
                 if top1_world_dist < world_thresh:
                     num_true_positive[thresh_idx] += 1
-                elif top1_world_dist > configs.eval.false_positive_thresh:
+                elif top1_world_dist > false_pos_thresh:
                     num_false_positive[thresh_idx] += 1
             else: # Negative Prediction
                 if not revisit:
@@ -92,7 +92,7 @@ def eval_singlesession(model, database, world_thresh, false_pos_thresh, time_thr
                     num_false_negative[thresh_idx] += 1
 
     # Find F1Max and Recall@1 
-    recall_1 = num_correct_loc / num_revisits
+    recall_1 = num_correct_loc / num_revisits * 100
 
     F1max = 0.0 
     for thresh_idx in range(num_thresholds):

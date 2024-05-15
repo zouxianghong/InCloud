@@ -134,5 +134,6 @@ dmypy.json
 
 # PyCharm settings
 .idea
-
-
+.vscode
+exp
+pickles

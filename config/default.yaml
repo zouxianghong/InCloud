@@ -1,4 +1,4 @@
-save_dir: null
+save_dir: /home/ericxhzou/Code/InCloud/exp/oxford_mink
 debug: false
 data: 
   num_points: 4096
@@ -16,7 +16,7 @@ model:
   feature_size: 256
   normalize_embeddings: False
 train: 
-  num_workers: 4
+  num_workers: 2
   batch_size: 16
   batch_size_limit: 256
   batch_expansion_rate: 1.4

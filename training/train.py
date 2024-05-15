@@ -49,4 +49,4 @@ if __name__ == '__main__':
 
     # Save model
     ckpt = trained_model.state_dict()
-    torch.save(ckpt, os.path.join(configs.save_dir, 'final_ckpt.pth'))
+    torch.save(ckpt, os.path.join(configs.save_dir, 'models', 'final_ckpt.pth'))
