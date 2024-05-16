@@ -83,9 +83,9 @@ if __name__ == '__main__':
 
         for index, row in df_locations.iterrows():
             if check_in_test_set(row['northing'], row['easting'], P):
-                df_test = df_test.append(row, ignore_index=True)
+                df_test = df_test._append(row, ignore_index=True)
             else:
-                df_train = df_train.append(row, ignore_index=True)
+                df_train = df_train._append(row, ignore_index=True)
 
     print("Number of training submaps: " + str(len(df_train['file'])))
     print("Number of non-disjoint test submaps: " + str(len(df_test['file'])))

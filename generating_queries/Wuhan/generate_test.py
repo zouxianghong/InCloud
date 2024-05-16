@@ -1,3 +1,6 @@
+# PointNetVLAD datasets: based on Oxford RobotCar and Inhouse
+# Code adapted from PointNetVLAD repo: https://github.com/mikacuy/pointnetvlad
+
 import numpy as np
 import os
 import pandas as pd
@@ -5,29 +8,56 @@ from sklearn.neighbors import KDTree
 import pickle
 import argparse
 from tqdm import tqdm 
-from datasets.oxford import TrainingTuple
+import matplotlib.pyplot as plt 
+from glob import glob
+
 # For training and test data splits
-X_WIDTH = 150
-Y_WIDTH = 150
+X_WIDTH = 50
+Y_WIDTH = 50
 
-# For University Sector
-P5 = [363621.292362, 142864.19756]
-P6 = [364788.795462, 143125.746609]
-P7 = [363597.507711, 144011.414174]
+# For Wuhan: Hankou
+P1 = [386273.970, 793668.824]
+P2 = [386305.362, 793162.555]
+P3 = [385831.885, 792749.506]
+P4 = [385362.307, 792877.504]
+P5 = [384935.007, 792984.298]
+P6 = [384807.070, 793441.784]
+P7 = [385304.117, 793992.687]
+P8 = [385766.586, 793849.294]
+P9 = [385257.490, 794769.447]
+P10 = [385789.477, 795208.429]
+P11 = [386207.435, 795550.294]
+P12 = [386676.948, 795994.441]
+P13 = [387111.465, 796413.011]
+P14 = [387574.958, 796707.013]
+P15 = [387241.220, 797424.534]
+P16 = [386738.763, 797150.805]
+P17 = [386169.484, 796850.781]
+P18 = [385512.475, 796579.367]
+P19 = [384986.521, 796359.250]
+P20 = [384449.766, 796096.536]
+P21 = [383729.387, 795831.933]
+P22 = [383190.904, 795463.801]
+P23 = [386448.284, 795758.231]
+P24 = [385218.739, 796463.208]
+# For Wuhan: Campus
+P25 = [3380083.109596, 533742.949219]
+P26 = [3380165.435562, 533853.722664]
+P27 = [3378973.098467, 533977.63572]
+P28 = [3378865.227791, 533805.883439]
+P29 = [3378748.251467, 534079.430823]
+P30 = [3379022.905337, 534138.2076]
+P31 = [3378827.995864, 534294.254426]
+P = [P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, 
+     P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, 
+     P21, P22, P23, P24, P25, P26, P27, P28, P29, P30, 
+     P31]
 
-# For Residential Area
-P8 = [360895.486453, 144999.915143]
-P9 = [362357.024536, 144894.825301]
-P10 = [361368.907155, 145209.663042]
 
-test_regions = {
-    'university': [P5,P6,P7],
-    'residential': [P8,P9,P10],
-    'business': []
-}
+FILENAME = "pointcloud_30m_2m_clean.csv"
+POINTCLOUD_FOLS = "pointcloud_30m_2m_clean"
+ENVS = ['wh_hankou_origin','whu_campus_origin']
 
-FILENAME = "pointcloud_centroids_25.csv"
-POINTCLOUD_FOLS = "pointcloud_25m_25"
 
 def construct_query_and_database_sets(base_path, folders, save_folder, file_extension, p, output_name):
     database_trees = []
@@ -99,12 +129,13 @@ def output_to_file(output, save_folder, filename):
         pickle.dump(output, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print("Done ", filename)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate evaluation datasets')
     parser = argparse.ArgumentParser(description='Generate Inhouse Training Dataset')
     parser.add_argument('--dataset_root', type=str, required=True, help='Dataset root folder')
-    parser.add_argument('--eval_thresh', type = int, default = 25, help = 'Threshold for positive examples')
-    parser.add_argument('--file_extension', type = str, default = '.bin', help = 'File extension expected')
+    parser.add_argument('--eval_thresh', type = int, default = 30, help = 'Threshold for positive examples')
+    parser.add_argument('--file_extension', type = str, default = '.npy', help = 'File extension expected')
     parser.add_argument('--save_folder', type = str, required = True, help = 'Folder to save pickle files to')
     args = parser.parse_args()
 
@@ -114,9 +145,8 @@ if __name__ == '__main__':
     base_path = args.dataset_root
     if not os.path.exists(args.save_folder):
         os.makedirs(args.save_folder)
+    
+    for ENV in ENVS:
+        folders = os.listdir(os.path.join(base_path, ENV))
+        construct_query_and_database_sets(os.path.join(base_path, ENV), folders, args.save_folder, args.file_extension, P, ENV)
 
-    # Select runs used for evaluation
-    for run in ['business', 'residential', 'university']:
-        folders = sorted([x for x in os.listdir(args.dataset_root) if run in x])
-        p = test_regions[run]
-        construct_query_and_database_sets(base_path, folders, args.save_folder, args.file_extension, p, run)

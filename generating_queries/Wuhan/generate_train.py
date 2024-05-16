@@ -10,13 +10,12 @@ import argparse
 from tqdm import tqdm 
 from datasets.oxford import TrainingTuple
 # Import test set boundaries
-import matplotlib.pyplot as plt 
+from generating_queries.Wuhan.generate_test import P, check_in_test_set
 
 
-FILENAME = "pd_northing_easting.csv"
-POINTCLOUD_FOLS = "Ouster"
-ENVS = ['DCC','Riverside']
-RUNS = ['01']
+FILENAME = "pointcloud_30m_2m_clean.csv"
+POINTCLOUD_FOLS = "pointcloud_30m_2m_clean"
+ENVS = ['wh_hankou_origin','whu_campus_origin']
 
 
 def construct_query_dict(df_centroids, save_folder, filename, ind_nn_r, ind_r_r):
@@ -55,12 +54,11 @@ def construct_query_dict(df_centroids, save_folder, filename, ind_nn_r, ind_r_r)
     print("Done ", filename)
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Baseline training dataset')
     parser.add_argument('--dataset_root', type=str, required=True, help='Dataset root folder')
-    parser.add_argument('--pos_thresh', type = int, default = 10, help = 'Threshold for positive examples')
-    parser.add_argument('--neg_thresh', type = int, default = 20, help = 'Threshold for negative examples')
+    parser.add_argument('--pos_thresh', type = int, default = 15, help = 'Threshold for positive examples')
+    parser.add_argument('--neg_thresh', type = int, default = 60, help = 'Threshold for negative examples')
     parser.add_argument('--file_extension', type = str, default = '.npy', help = 'File extension expected')
     parser.add_argument('--save_folder', type = str, required = True, help = 'Folder to save pickle files to')
     args = parser.parse_args()
@@ -73,14 +71,22 @@ if __name__ == '__main__':
         os.makedirs(args.save_folder)
 
     for ENV in ENVS:
-        folders = [f'{ENV}_{RUN}' for RUN in RUNS]
         df_train = pd.DataFrame(columns=['file', 'northing', 'easting'])
-        for folder in folders:
-            df_locations = pd.read_csv(os.path.join(base_path, ENV, folder, FILENAME), sep = ',')
-            df_locations['timestamp'] = base_path + '/' + ENV + '/' + folder + '/' + POINTCLOUD_FOLS + '/' + df_locations['timestamp'].astype(str) + args.file_extension
+        df_test = pd.DataFrame(columns=['file', 'northing', 'easting'])
+        for run in os.listdir(os.path.join(base_path, ENV)):
+            df_locations = pd.read_csv(os.path.join(base_path, ENV, run, FILENAME), sep = ',')
+            df_locations['timestamp'] = base_path + '/' + ENV + '/' + run + '/' + POINTCLOUD_FOLS + '/' + df_locations['timestamp'].astype(str) + args.file_extension
             df_locations = df_locations.rename(columns = {'timestamp': 'file'})
-            df_train = pd.concat([df_train, df_locations], ignore_index = True)
+        
+            for index, row in df_locations.iterrows():
+                if check_in_test_set(row['northing'], row['easting'], P):
+                    df_test = df_test._append(row, ignore_index=True)
+                else:
+                    df_train = df_train._append(row, ignore_index=True)
         
         print(f'Train Samples for Environment {ENV} : {len(df_train)}')
-        construct_query_dict(df_train, args.save_folder, f'{ENV}_train.pickle', args.pos_thresh, args.neg_thresh)
+        print("Number of training submaps: " + str(len(df_train['file'])))
+        print("Number of non-disjoint test submaps: " + str(len(df_test['file'])))
+        construct_query_dict(df_train, args.save_folder, f'{ENV}_train_queries.pickle', args.pos_thresh, args.neg_thresh)
+        construct_query_dict(df_test, args.save_folder, f'{ENV}_test_queries.pickle', args.pos_thresh, args.neg_thresh)
 
