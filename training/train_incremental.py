@@ -61,7 +61,6 @@ if __name__ == '__main__':
     memory.update_memory(args.initial_environment, env_idx = 0)
     metrics.update(configs.eval.initial_environment_result, env_idx = 0)
     print('Done')
-
     
     # Iterate over training steps
     old_env = args.initial_ckpt

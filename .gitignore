@@ -137,3 +137,6 @@ dmypy.json
 .vscode
 exp
 pickles
+libs/pointops/build
+libs/pointops/__pycache__
+libs/pointops/pointops.egg-info

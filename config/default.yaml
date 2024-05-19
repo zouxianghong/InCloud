@@ -1,4 +1,4 @@
-save_dir: /home/ericxhzou/Code/InCloud/exp/oxford_mink
+save_dir: /home/ericxhzou/Code/InCloud/exp/oxford_PatchAugNet
 debug: false
 data: 
   num_points: 4096
@@ -6,7 +6,8 @@ data:
   aug_mode: 1
   pin_memory: false
 model: 
-  name: MinkFPN_GeM
+  # name: logg3d, PointNetVlad, MinkFPN_GeM, PatchAugNet
+  name: PatchAugNet
   mink_quantization_size: 0.01
   planes: [32,64,64]
   layers: [1,1,1]

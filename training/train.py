@@ -37,6 +37,8 @@ if __name__ == '__main__':
     # Make save directory and logger
     if not os.path.exists(configs.save_dir):
         os.makedirs(configs.save_dir)
+    if not os.path.exists(os.path.join(configs.save_dir, 'models')):
+        os.makedirs(os.path.join(configs.save_dir, 'models'))
     logger = SummaryWriter(os.path.join(configs.save_dir, 'tf_logs'))
     
     # Train model
