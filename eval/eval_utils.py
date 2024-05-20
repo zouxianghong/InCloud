@@ -88,7 +88,7 @@ def get_latent_vectors(model, dataset_dict):
 
     for idx, batch in enumerate(dataloader):
         batch = {k:v.to('cuda') for k,v in batch.items()}
-        embeddings = model(batch)
+        embeddings, _ = model(batch)
         embeddings_list += list(embeddings.cpu().numpy())
         
     embeddings_stack = np.vstack(embeddings_list)

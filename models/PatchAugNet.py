@@ -451,62 +451,14 @@ class PatchAugNet(nn.Module):
         if self.use_a2a_recon:
             self.decoder = PointNetDecoder(embedding_size=256, num_points=20)
 
-    def forward(self, batch, nn_dict=None, return_feat=False):
+    def forward(self, batch):
         # task1: global descriptor
         x = batch['cloud']
-        xyz = x  # B x N x 3
-        # center_idx: [B x 1024, B x 128, B x 16]
-        # sample_idx: [B x 1024 x nsample, B x 128 x nsample, B x 16 x nsample]
-        # sa_features: [B x 64 x 1024, B x 256 x 128, B x 512 x 16]
         # fp_features: [B x 256 x 128, B x 256 x 1024, B x 256 x 4096]
         res = self.backbone(x)
-        center_idx = res['center_idx_origin']
-        sample_idx = res['sample_idx_origin']
-        fp_features = res['fp_features']
-
-        x = self.aggregation(fp_features)  # Bx256x128, Bx256x1024, Bx256x4096 -> Bx256
-        res = x
-        # task2: patch reconstruction and patch feature augmentation (f1 only, each cloud has 1024 patches)
-        if nn_dict is not None:  # nn_dict: key: indices of two clouds, value: list of nearest idx pairs
-            # get related clouds' indices
-            related_cloud_idx = set()
-            for i, j in nn_dict:
-                related_cloud_idx.add(i)
-                related_cloud_idx.add(j)
-            related_cloud_idx = list(related_cloud_idx)
-            # get origin and reconstructed patches
-            center_indices = []
-            origin_patches_out = []
-            patch_features = []
-            reconstructed_patches_out = []
-            origin_patches = pointops.grouping(
-                xyz.transpose(1, 2).contiguous(),
-                sample_idx[0])  # B x 3 x 1024 x nsample
-            for i in range(len(related_cloud_idx)):
-                cloud_idx = torch.tensor([related_cloud_idx[i]]).to(x.device)
-                center_indices_i = torch.index_select(center_idx[0], dim=0, index=cloud_idx)  # 1024
-                selected_features_i = torch.index_select(fp_features[1], dim=0, index=cloud_idx)
-                selected_features_i = selected_features_i.squeeze().transpose(1, 0)  # 1024 x 256
-                if self.use_l2_norm:
-                    selected_features_i = F.normalize(selected_features_i)
-                origin_patches_i = torch.index_select(origin_patches, dim=0, index=cloud_idx)
-                origin_patches_i = origin_patches_i.squeeze().transpose(2, 0).transpose(1, 0)
-                center_indices.append(center_indices_i)
-                origin_patches_out.append(origin_patches_i)
-                patch_features.append(selected_features_i)
-                # a2a recon
-                if self.use_a2a_recon:
-                    reconstructed_patches_i = self.decoder(selected_features_i)  # 1024 x nsample x 3
-                    reconstructed_patches_out.append(reconstructed_patches_i)
-            patch_recon_data = {'cloud_indices': related_cloud_idx,
-                                'center_indices': center_indices,
-                                'origin_patches': origin_patches_out,
-                                'patch_features': patch_features,
-                                'reconstructed_patches': reconstructed_patches_out}
-            res = res, patch_recon_data
-        if return_feat:
-            res = res, fp_features, center_idx
-        return res
+        g_feat = self.aggregation(res['fp_features'])  # Bx256x128, Bx256x1024, Bx256x4096 -> Bx256
+        l_feat = res['fp_features'][1].transpose(1,2)  # B x 1024 x 256
+        return g_feat, l_feat
 
 
 class PointNet2(nn.Module):

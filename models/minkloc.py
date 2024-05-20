@@ -3,6 +3,7 @@
 
 import torch
 import torch.nn as nn 
+import torch.nn.functional as F
 import MinkowskiEngine as ME
 
 from models.minkfpn import MinkFPN
@@ -56,7 +57,7 @@ class MinkLoc(torch.nn.Module):
         # x is (batch_size, output_dim) tensor
         if self.normalize_embeddings:
             x = F.normalize(x, p = 2, dim = 1)
-        return x
+        return x, None
 
     def print_info(self):
         print('Model class: MinkLoc')

@@ -98,12 +98,18 @@ class TrainerIncremental:
         # Get embeddings and Loss
         self.optimizer.zero_grad()
         with torch.no_grad():
-            embeddings_old = self.model_frozen(batch)
-        embeddings_new = self.model_new(batch)
+            embeddings_old, embeddings_l_old = self.model_frozen(batch)
+        embeddings_new, embeddings_l_new = self.model_new(batch)
 
         loss_place_rec, num_triplets, non_zero_triplets, embedding_norm = self.loss_fn(embeddings_new, positives_mask, negatives_mask)
         if configs.train.loss.incremental.name != 'EWC':
             loss_incremental = self.loss_fn_inc(embeddings_old, embeddings_new)
+            if embeddings_l_old is not None:
+                nl = embeddings_l_old.shape[1]
+                embeddings_l_old = embeddings_l_old.view(-1, embeddings_l_old.shape[-1])
+                embeddings_l_new = embeddings_l_new.view(-1, embeddings_l_new.shape[-1])
+                loss_incremental_l = self.loss_fn_inc(embeddings_l_old, embeddings_l_new) / nl
+                loss_incremental = loss_incremental + loss_incremental_l
         else:
             loss_incremental = self.loss_fn_inc(self.model_new, self.old_parameters, self.fisher_matrix)
         loss_total = loss_place_rec + loss_incremental

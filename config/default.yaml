@@ -35,10 +35,10 @@ train:
       name: BatchHardTripletMarginLoss
       margin: 0.2
     incremental:
-      name: 'None' 
+      name: 'StructureAware'
       weight: 100
       margin: 0.0002
-      adjust_weight: False 
+      adjust_weight: False
       gamma: 10
 eval:
   batch_size: 256

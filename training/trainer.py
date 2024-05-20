@@ -79,7 +79,7 @@ class Trainer:
 
         # Get embeddings and Loss
         self.optimizer.zero_grad()
-        embeddings = self.model(batch)
+        embeddings, _ = self.model(batch)
 
         loss_place_rec, num_triplets, non_zero_triplets, embedding_norm = self.loss_fn(embeddings, positives_mask, negatives_mask)
         

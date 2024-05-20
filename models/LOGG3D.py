@@ -9,6 +9,7 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from models.netvlad import *
 from models.spvnas.model_zoo import spvcnn
+from datasets.dataset_utils import make_sparse_tensor
 
 __all__ = ['LOGG3D']
 
@@ -19,12 +20,6 @@ class LOGG3D(nn.Module):
 
         self.spvcnn = spvcnn(output_dim=output_dim)
         self.mp1 = torch.nn.MaxPool2d((4096, 1), 1)
-        self.proj = nn.Sequential(
-            nn.Linear(output_dim, 256, bias=False),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Linear(256, 128, bias=True)
-        )
 
     def forward(self, batch):
         assert 'cloud' in batch.keys(), 'Error: Key "Cloud" not in batch keys.  Set model.mink_quantization_size to "None" to avoid!'
@@ -40,8 +35,7 @@ class LOGG3D(nn.Module):
         paddings = torch.zeros(batch_size,4096-num_points,feature_size).cuda()
         x = torch.cat((x,paddings),dim=1)
         x= self.mp1(x).squeeze()
-        projector = self.proj(x)
-        return x, projector
+        return x, None
 
 
 if __name__ == '__main__':
