@@ -28,3 +28,15 @@ def make_inc_loss():
     else:
         raise NotImplementedError(f'Unknown Loss : {inc_loss_name}')
     return loss_fn
+
+def make_inc_l_loss():
+    inc_l_loss_name = configs.train.loss.incremental_l.name 
+    if inc_l_loss_name == None or inc_l_loss_name == 'None':
+        loss_fn = NoIncLoss()
+    elif inc_l_loss_name == 'StructureAware':
+        loss_fn = StructureAware()
+    elif inc_l_loss_name == 'DistributionAware':
+        loss_fn = StructureAware()
+    else:
+        raise NotImplementedError(f'Unknown Loss : {inc_l_loss_name}')
+    return loss_fn

@@ -23,7 +23,7 @@ train:
   batch_expansion_rate: 1.4
   batch_expansion_th: 0.7
   memory:
-    num_pairs: 0
+    num_pairs: 256
   optimizer: 
     lr: 0.001
     weight_decay: 0.001
@@ -36,10 +36,16 @@ train:
       margin: 0.2
     incremental:
       name: 'StructureAware'
-      weight: 100
+      weight: 1
       margin: 0.0002
       adjust_weight: False
       gamma: 10
+    incremental_l:
+      name: 'DistributionAware'
+      weight: 1
+      margin: 0.0002
+      adjust_weight: True 
+      gamma: 10 # default 10
 eval:
   batch_size: 256
   thresh_min: 0
