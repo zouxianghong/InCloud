@@ -7,7 +7,7 @@ from tqdm import tqdm
 from misc.utils import AverageMeter
 from models.model_factory import model_factory
 from datasets.dataset_utils import make_dataloader
-from losses.loss_factory import make_pr_loss, make_inc_loss, make_inc_l_loss
+from losses.loss_factory import make_pr_loss, make_inc_loss
 
 from torchpack.utils.config import configs 
 
@@ -24,7 +24,6 @@ class TrainerIncremental:
         self.loss_total_meter = AverageMeter()
         self.loss_pr_meter = AverageMeter()
         self.loss_inc_meter = AverageMeter()
-        self.loss_inc_l_meter = AverageMeter()
         self.num_triplets_meter = AverageMeter()
         self.non_zero_triplets_meter = AverageMeter()
         self.embedding_norm_meter = AverageMeter()
@@ -60,7 +59,6 @@ class TrainerIncremental:
         # Make loss functions 
         self.loss_fn = make_pr_loss()
         self.loss_fn_inc = make_inc_loss()
-        self.loss_fn_inc_l = make_inc_l_loss()
         if configs.train.loss.incremental.name == 'EWC':
             self.fisher_matrix, self.old_parameters = self.loss_fn_inc.get_fisher_matrix(
                                                         dataloader = self.dataloader,
@@ -74,7 +72,6 @@ class TrainerIncremental:
         self.loss_total_meter.reset()
         self.loss_pr_meter.reset()
         self.loss_inc_meter.reset()
-        self.loss_inc_l_meter.reset()
         self.num_triplets_meter.reset()
         self.non_zero_triplets_meter.reset()
         self.embedding_norm_meter.reset()
@@ -98,8 +95,8 @@ class TrainerIncremental:
         # Get embeddings and Loss
         self.optimizer.zero_grad()
         with torch.no_grad():
-            embeddings_old, embeddings_l_old = self.model_frozen(batch)
-        embeddings_new, embeddings_l_new = self.model_new(batch)
+            embeddings_old = self.model_frozen(batch)
+        embeddings_new = self.model_new(batch)
 
         loss_place_rec, num_triplets, non_zero_triplets, embedding_norm = self.loss_fn(embeddings_new, positives_mask, negatives_mask)
         if configs.train.loss.incremental.name != 'EWC':
@@ -107,18 +104,6 @@ class TrainerIncremental:
         else:
             loss_incremental = self.loss_fn_inc(self.model_new, self.old_parameters, self.fisher_matrix)
         loss_total = loss_place_rec + loss_incremental
-        
-        if embeddings_l_old is not None:
-            sample_idxs = torch.from_numpy(np.random.choice(np.arange(embeddings_l_old.shape[1]), 32)).cuda()
-            embeddings_l_old = torch.index_select(embeddings_l_old, dim=1, index=sample_idxs)
-            embeddings_l_new = torch.index_select(embeddings_l_new, dim=1, index=sample_idxs)
-            loss_incremental_l = 0
-            for b in range(embeddings_l_old.shape[0]):
-                loss_incremental_l_b = self.loss_fn_inc_l(embeddings_l_old[b], embeddings_l_new[b])
-                loss_incremental_l = loss_incremental_l + loss_incremental_l_b
-            loss_incremental_l = loss_incremental_l / embeddings_l_old.shape[0]
-            loss_total = loss_total + loss_incremental_l
-            self.loss_inc_l_meter.update(loss_incremental_l.item())
 
         # Backwards
         loss_total.backward()
@@ -150,7 +135,6 @@ class TrainerIncremental:
         self.logger.add_scalar(f'Step_{self.env_idx}/Total_Loss', self.loss_total_meter.avg, epoch)
         self.logger.add_scalar(f'Step_{self.env_idx}/Place_Rec_Loss', self.loss_pr_meter.avg, epoch)
         self.logger.add_scalar(f'Step_{self.env_idx}/Incremental_Loss', self.loss_inc_meter.avg, epoch)
-        self.logger.add_scalar(f'Step_{self.env_idx}/Incremental_Local_Loss', self.loss_inc_l_meter.avg, epoch)
         self.logger.add_scalar(f'Step_{self.env_idx}/Non_Zero_Triplets', self.non_zero_triplets_meter.avg, epoch)
         self.logger.add_scalar(f'Step_{self.env_idx}/Embedding_Norm', self.embedding_norm_meter.avg, epoch)
 

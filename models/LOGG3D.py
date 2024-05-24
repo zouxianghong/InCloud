@@ -35,7 +35,7 @@ class LOGG3D(nn.Module):
         paddings = torch.zeros(batch_size,4096-num_points,feature_size).cuda()
         x = torch.cat((x,paddings),dim=1)
         x= self.mp1(x).squeeze()
-        return x, None
+        return x
 
 
 if __name__ == '__main__':

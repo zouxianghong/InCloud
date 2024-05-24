@@ -249,5 +249,5 @@ class PointNetVlad(nn.Module):
         x = batch['cloud'].unsqueeze(1)
         x = self.point_net(x)
         x = self.net_vlad(x)
-        return x, None
+        return x
 

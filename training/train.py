@@ -15,7 +15,6 @@ from trainer import Trainer
 from torch.utils.tensorboard import SummaryWriter
 
 
-
 if __name__ == '__main__':
 
     # Repeatability 
@@ -26,7 +25,6 @@ if __name__ == '__main__':
     # Get args and configs 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type = str, required = True, help = 'Path to configuration YAML file')
-    parser.add_argument('--train_environment', type = str, required = True, help = 'Path to training environment pickle')
     args, opts = parser.parse_known_args()
     configs.load(args.config, recursive = True)
     configs.update(opts)
@@ -35,14 +33,12 @@ if __name__ == '__main__':
     print(configs)
 
     # Make save directory and logger
-    if not os.path.exists(configs.save_dir):
-        os.makedirs(configs.save_dir)
-    if not os.path.exists(os.path.join(configs.save_dir, 'models')):
-        os.makedirs(os.path.join(configs.save_dir, 'models'))
-    logger = SummaryWriter(os.path.join(configs.save_dir, 'tf_logs'))
+    if not os.path.exists(os.path.join(configs.save_dir, configs.model.name, 'models')):
+        os.makedirs(os.path.join(configs.save_dir, configs.model.name, 'models'))
+    logger = SummaryWriter(os.path.join(configs.save_dir, configs.model.name, 'tf_logs'))
     
     # Train model
-    trainer = Trainer(logger, args.train_environment)
+    trainer = Trainer(logger, configs.train.initial_environment)
     trained_model = trainer.train()
 
     # Evaluate 
@@ -51,4 +47,4 @@ if __name__ == '__main__':
 
     # Save model
     ckpt = trained_model.state_dict()
-    torch.save(ckpt, os.path.join(configs.save_dir, 'models', 'final_ckpt.pth'))
+    torch.save(ckpt, os.path.join(configs.save_dir, configs.model.name, 'models', 'final_ckpt.pth'))

@@ -457,8 +457,7 @@ class PatchAugNet(nn.Module):
         # fp_features: [B x 256 x 128, B x 256 x 1024, B x 256 x 4096]
         res = self.backbone(x)
         g_feat = self.aggregation(res['fp_features'])  # Bx256x128, Bx256x1024, Bx256x4096 -> Bx256
-        l_feat = res['fp_features'][1].transpose(1,2).squeeze(-1) # B x 1024 x 256
-        return g_feat, None
+        return g_feat
 
 
 class PointNet2(nn.Module):

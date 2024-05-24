@@ -57,7 +57,7 @@ class MinkLoc(torch.nn.Module):
         # x is (batch_size, output_dim) tensor
         if self.normalize_embeddings:
             x = F.normalize(x, p = 2, dim = 1)
-        return x, None
+        return x
 
     def print_info(self):
         print('Model class: MinkLoc')

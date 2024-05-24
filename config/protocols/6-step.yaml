@@ -1,3 +1,6 @@
+train: 
+  initial_environment: 'pickles/Oxford/Oxford_train_queries.pickle'
+  incremental_environments: ['pickles/MulRan/DCC_train.pickle', 'pickles/MulRan/Riverside_train.pickle', 'pickles/In-house/In-house_train_queries.pickle', 'pickles/Wuhan/wh_hankou_origin_train_queries.pickle', 'pickles/Wuhan/whu_campus_origin_train_queries.pickle']
 eval:
   initial_environment_result: {'Oxford': 93.7}
   environments: {

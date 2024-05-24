@@ -1,8 +1,8 @@
-save_dir: /home/ericxhzou/Code/InCloud/exp/oxford_PatchAugNet
+save_dir: /home/ericxhzou/Code/InCloud/exp
 debug: false
 data: 
   num_points: 4096
-  dataset_folder: /datasets/work/d61-eif/source/incrementalPointClouds
+  dataset_folder: /home/ericxhzou/Data/benchmark_datasets
   aug_mode: 1
   pin_memory: false
 model: 

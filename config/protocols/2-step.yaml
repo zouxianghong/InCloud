@@ -1,3 +1,6 @@
+train: 
+  initial_environment: 'pickles/Oxford/Oxford_train_queries.pickle'
+  incremental_environments: ['pickles/MulRan/DCC_train.pickle', 'pickles/Wuhan/whu_campus_origin_train_queries.pickle']
 eval:
   initial_environment_result: {'Oxford': 0.938}
   environments: {
@@ -11,10 +14,10 @@ eval:
       'database_files': ['pickles/MulRan/DCC_02_evaluation_database.pickle', 'pickles/MulRan/DCC_03_evaluation_database.pickle'],
       'query_files': [null, null],
     },
-    'Hankou': {
+    'WHU-Campus': {
       'stage_introduced': 2,
-      'database_files': ['pickles/Wuhan/wh_hankou_origin_evaluation_database.pickle'],
-      'query_files': ['pickles/Wuhan/wh_hankou_origin_evaluation_query.pickle'],
+      'database_files': ['pickles/Wuhan/whu_campus_origin_evaluation_database.pickle'],
+      'query_files': ['pickles/Wuhan/whu_campus_origin_evaluation_query.pickle'],
     },
   }
   world_thresh: {
