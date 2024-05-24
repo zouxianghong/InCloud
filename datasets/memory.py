@@ -85,7 +85,7 @@ class Memory:
         selected_idx = [] # List of already selected positives; prevent double dipping!
         env_replaced_idx = [] # List of replaced idx in the memory
         # Replace tuples 
-        while(num_replaced < num_to_replace):
+        while(num_replaced < num_to_replace and len(new_tuples_idx) > 0):
             # Get new tuple pair to append to list 
             anchor_idx = new_tuples_idx.pop(0)
             if anchor_idx in selected_idx: # Skip if already been selected
@@ -107,11 +107,14 @@ class Memory:
                 self.train_tuples.append([anchor_tuple, pair_tuple])
                 self.tuple_env_idx.append(env_idx)
                 env_replaced_idx.append(len(self.train_tuples) - 1)
-            else: # Find and replace most represented environment
+            elif len(self.tuple_env_idx) > 0: # Find and replace most represented environment
                 x = self.tuple_env_idx[self.tuple_env_idx != env_idx]
                 unique, counts = np.unique(x, return_counts = True)
                 replace_env = np.argmax(counts)
-                replace_idx = np.random.choice(np.nonzero(self.tuple_env_idx == replace_env)[0])
+                tuple_env_idx_replace = np.nonzero(self.tuple_env_idx == replace_env)[0]
+                if len(tuple_env_idx_replace) == 0:
+                    continue
+                replace_idx = np.random.choice(tuple_env_idx_replace)
                 env_replaced_idx.append(replace_idx)
                 self.train_tuples[replace_idx] = [anchor_tuple, pair_tuple]
                 self.tuple_env_idx[replace_idx] = env_idx 
